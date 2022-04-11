@@ -7,7 +7,16 @@ import streamlit as st
 
 # <============================================== Data Preparation functions ==============================================>
 # >>>>>>>>>> Data Cleanning functions <<<<<<<<<<
-# 1. create brand column from name
+# 1. find car characteristics in collected earlier data
+def fillna_by_col(data, col):
+    df = data.copy()
+    unique_vals = df.loc[df.isnull().any(axis=1), col].unique()
+    for val in unique_vals:
+        df[df[col]==val] = df[df[col]==val].ffill().bfill()
+    
+    return df
+
+# 2. create brand column from name
 def brand_col(data):
     df = data.copy()
     df['brand'] = df['name'].str.split().str[0]
@@ -18,7 +27,7 @@ def brand_col(data):
     return df
 
 
-# 2. check if all values seem to be correct
+# 3. check if all values seem to be correct
 def values_check(data):
     df = data.copy()
     
@@ -41,7 +50,7 @@ def values_check(data):
     return df, drop_df
 
 
-# 3.1. update of func for unseen data (known_df added as source of known data)
+# 4.1. update of func for unseen data (known_df added as source of known data)
 def fillna_stat_by_col(data, known_df, g_col, f_colls, fill_method):
     df = data.copy()
     unique_vals = df.loc[df.isnull().any(axis=1), g_col].unique()
@@ -55,7 +64,7 @@ def fillna_stat_by_col(data, known_df, g_col, f_colls, fill_method):
     
     return df
 
-# 3.2. for filling all nulls with the help of fillna_stat_by_col() func
+# 4.2. for filling all nulls with the help of fillna_stat_by_col() func
 def all_fillna_stat(data, known_df):
     df = data.copy()
     
@@ -83,7 +92,7 @@ def all_fillna_stat(data, known_df):
     return df
 
 
-# 4. check and drop nulls
+# 5. check and drop nulls
 def na_check(data, drop_data):
     df, drop_df = data.copy(), drop_data.copy()
     if df.isna().any().any():
@@ -139,14 +148,17 @@ def xy_split(data):
 
 
 # >>>>>>>>>> Main function (unify all functions above) <<<<<<<<<<
-def data_prep(data, train_df, y_true_flg=False):
+def data_prep(data, train_df, y_true_flg=False, skip_dc=False):
     df = data.copy()
     
     # Data Cleaning
-    df = brand_col(df)
-    df, drop_df = values_check(df)
-    df = all_fillna_stat(df, train_df)
-    df, drop_df = na_check(df, drop_df)
+    if not skip_dc:
+        cols = ['name', 'fuel', 'transmission', 'seats', 'engine_cc', 'max_power_bhp']
+        df.loc[:, cols] = fillna_by_col(df.loc[:, cols], 'name')
+        df = brand_col(df)
+        df, drop_df = values_check(df)
+        df = all_fillna_stat(df, train_df)
+        df, drop_df = na_check(df, drop_df)
     
     # Feature Engineering
     df = all_col_to_col_flg(df)
@@ -156,8 +168,8 @@ def data_prep(data, train_df, y_true_flg=False):
     if y_true_flg:
         X, y = xy_split(df)
         return (X, y), drop_df
-    
     else:
+        df = df.select_dtypes(include='number')
         return df, drop_df
 
 
@@ -167,6 +179,7 @@ def data_prep(data, train_df, y_true_flg=False):
 # predict with evaluation of model accuracy
 def pred_with_scores(model, X, y_true=None):
     y_pred = model.predict(X)
+    y_pred = np.round(y_pred, 2)
     if y_true is not None:
         r2 = r2_score(y_true, y_pred)
         n, p = X.shape
@@ -185,9 +198,9 @@ def pred_with_scores(model, X, y_true=None):
 
 
 # <======================================== Data Preparation + Prediction function ========================================>
-def data_prep_and_predict(data, train_df, model, y_true_flg=False, return_drop=False):
+def data_prep_and_predict(data, train_df, model, y_true_flg=False, return_drop=True, skip_dc=False):
     df = data.copy()
-    df, drop_df = data_prep(df, train_df, y_true_flg=y_true_flg)
+    df, drop_df = data_prep(df, train_df, y_true_flg=y_true_flg, skip_dc=skip_dc)
     if y_true_flg:
         y_pred, scores = pred_with_scores(model, df[0], df[1])
         return (y_pred, drop_df, scores) if return_drop else (y_pred, scores)
@@ -217,3 +230,8 @@ def read_csv_file(file_path):
 def predict_df(df, y_pred):
     y_pred = pd.Series(y_pred, name='predicted_price_inr')
     return pd.concat([y_pred, df], axis=1)
+
+@st.cache
+def convert_df(df):
+     # IMPORTANT: Cache the conversion to prevent computation on every rerun
+     return df.to_csv(index=False).encode('utf-8')

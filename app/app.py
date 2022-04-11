@@ -45,8 +45,6 @@ web_pages = [
     ]
 curr_web_page = st.sidebar.selectbox('Navigaton', web_pages)
 
-#st.write(st.session_state.rfr_model)
-
 
 
 
@@ -66,11 +64,59 @@ if curr_web_page == 'About the app':
 
 
 
+# >>>>>>>>>> 'Predict the price of one car' <<<<<<<<<<
+if curr_web_page == 'Predict the price of one car':
+    st.markdown("## Predict the price of one car")
+
+    selectbox_vals = {
+        'fuel': ['Petrol', 'Diesel', 'CNG', 'LPG'],
+        'seller_type': ['Individual', 'Dealer'],
+        'transmission': ['Manual', 'Automatic'],
+        'owner': ['First Owner', 'Second Owner', 'Third Owner', 'Fourth & Above Owner'],
+        'seats': ['2', '4', '5', '6', '7', '8', '9', '10'],
+        'brand': ['Hyundai', 'Mahindra', 'Chevrolet', 'Honda', 'Ford', 'Tata', 'Toyota', 'Maruti', 'BMW', 'Volkswagen', 'Audi', 'Nissan', 'Skoda', 'Mercedes-Benz', 'Datsun', 'Renault', 'Fiat', 'MG', 'Jeep', 'Volvo', 'Kia', 'Land Rover', 'Mitsubishi', 'Jaguar', 'Porsche', 'Mini Cooper', 'ISUZU']
+    }
+    
+    c1, c2 = st.columns(2)
+
+    brand = c1.selectbox('Brand', selectbox_vals['brand'])
+    fuel = c1.selectbox('Fuel', selectbox_vals['fuel'])
+    engine_cc = c1.number_input('Capacity of the engine (cc)', min_value=624.0, max_value=6752.0)
+    max_power_bhp = c1.number_input('Engine power (bhp)', min_value=25.4, max_value=626.0)
+    transmission = c1.select_slider('Transmission', selectbox_vals['transmission'])    
+
+    seats = c2.selectbox('Number of seats', selectbox_vals['seats'])
+    owner = c2.selectbox('Owner', selectbox_vals['owner'])
+    year = c2.number_input('Year', min_value=1983, max_value=2021, value=2021)
+    km_driven = c2.number_input('Kilometers driven', min_value=100, max_value=3800000)
+    seller_type = c2.select_slider('Seller', selectbox_vals['seller_type'])
+
+    all_vals = {
+        'brand': brand,
+        'fuel': fuel,
+        'engine_cc': engine_cc, 
+        'max_power_bhp': max_power_bhp, 
+        'transmission': transmission,
+        'seats': seats,
+        'owner': owner,
+        'year': year,
+        'km_driven': km_driven,
+        'seller_type': seller_type 
+        }
+    df = pd.DataFrame(all_vals, index=[0])
+    # drop after testing
+    st.dataframe(df)
+
+    
+
+
+
+
 # >>>>>>>>>> 'Predict prices for a file with cars' <<<<<<<<<<
 if curr_web_page == 'Predict prices for a file with cars':
     st.markdown("## Predict prices for a file with cars")
 
-    with st.sidebar.header('1. Upload input file'):
+    with st.sidebar.header('Upload input file'):
         uploaded_file = st.sidebar.file_uploader(
             "Upload a CSV file with car characteristics",
             type=["csv"]
@@ -92,13 +138,23 @@ if curr_web_page == 'Predict prices for a file with cars':
                 valid_df, 
                 st.session_state.known_df, 
                 st.session_state.rfr_model, 
-                True, 
-                True
+                'selling_price_inr' in list(valid_df.columns)
                 )
-        st.dataframe(predict_df(valid_df, result[0]))
+        
+        pred_df = predict_df(valid_df, result[0])
+        st.dataframe(pred_df)
+
+        csv_file = convert_df(pred_df)
+        st.download_button(
+            label='📥 Download .csv file with predicted prices',
+            data=csv_file, 
+            file_name= 'predicted_car_prices.csv'
+            )
+        
         if len(result) == 3:
             st.markdown("#### Model scores")
             st.dataframe(result[2])
+
         if not result[1].empty:
             st.markdown("#### Dropped rows from input file")
             st.dataframe(result[1])
