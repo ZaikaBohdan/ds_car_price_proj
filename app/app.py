@@ -1,18 +1,29 @@
 import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
 
-import pickle
-import requests
+from func import *
 
 import streamlit as st
 
 # <==================== Set up ====================>
 # For loading model only once
 if 'rfr_model' not in st.session_state:
-    #r = requests.get('https://github.com/ZaikaBohdan/ds_car_price_proj/blob/main/app/rfr_model.sav?raw=true')
-    #st.session_state.rfr_model = r.text
-    #pickle.load(open(, 'rb'))
-    pass
+    df = read_csv_file('https://raw.githubusercontent.com/ZaikaBohdan/ds_car_price_proj/main/data/clean_train.csv')
+    # Feature Engineering
+    fe_df = all_col_to_col_flg(df)
+    fe_df = brand_by_mean_price(fe_df, df)
+    # Features/target split
+    X, y = xy_split(fe_df)
+    # Model fitting
+    rfr = RandomForestRegressor(
+        max_features='sqrt', 
+        n_estimators=50, 
+        random_state=0
+        )
+    rfr.fit(X, y)
 
+    st.session_state.known_df = df
+    st.session_state.rfr_model = rfr
 
 
 
@@ -22,7 +33,7 @@ st.set_page_config(
     page_title='Used car price prediction for the CarDekho website',
     page_icon='🚗',
     layout='centered'
-)
+    )
 
 st.write("# Used car price prediction for the CarDekho website")
 
@@ -70,12 +81,27 @@ if curr_web_page == 'Predict prices for a file with cars':
 
     if uploaded_file is not None:
         st.markdown("### Input data")
-        df = pd.read_csv(uploaded_file)
-        st.dataframe(df)
-        st.markdown("### Predicted prices")
         
+        valid_df = read_csv_file(uploaded_file)
+        st.dataframe(valid_df)
+        
+        st.markdown("### Predicted prices")
 
-        #with st.sidebar.header('1. Upload input file'):
+        with st.spinner():
+            result = data_prep_and_predict(
+                valid_df, 
+                st.session_state.known_df, 
+                st.session_state.rfr_model, 
+                True, 
+                True
+                )
+        st.dataframe(predict_df(valid_df, result[0]))
+        if len(result) == 3:
+            st.markdown("#### Model scores")
+            st.dataframe(result[2])
+        if not result[1].empty:
+            st.markdown("#### Dropped rows from input file")
+            st.dataframe(result[1])
     
     else:
         st.info('Awaiting for csv file with car characteristics to be uploaded in the sidebar.')
