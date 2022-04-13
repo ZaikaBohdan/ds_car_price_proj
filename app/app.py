@@ -83,13 +83,13 @@ if curr_web_page == 'Predict the price of one car':
     fuel = c1.selectbox('Fuel', selectbox_vals['fuel'])
     engine_cc = c1.number_input('Capacity of the engine (cc)', min_value=624.0, max_value=6752.0)
     max_power_bhp = c1.number_input('Engine power (bhp)', min_value=25.4, max_value=626.0)
-    transmission = c1.select_slider('Transmission', selectbox_vals['transmission'])    
+    transmission = c1.radio('Transmission', selectbox_vals['transmission'])    
 
     seats = c2.selectbox('Number of seats', selectbox_vals['seats'])
     owner = c2.selectbox('Owner', selectbox_vals['owner'])
     year = c2.number_input('Year', min_value=1983, max_value=2021, value=2021)
     km_driven = c2.number_input('Kilometers driven', min_value=100, max_value=3800000)
-    seller_type = c2.select_slider('Seller', selectbox_vals['seller_type'])
+    seller_type = c2.radio('Seller', selectbox_vals['seller_type'])
 
     all_vals = {
         'brand': brand,
@@ -104,10 +104,20 @@ if curr_web_page == 'Predict the price of one car':
         'seller_type': seller_type 
         }
     df = pd.DataFrame(all_vals, index=[0])
-    # drop after testing
-    st.dataframe(df)
 
-    
+    # solution for centring the button
+    col_but = st.columns(5)
+    pred_button = col_but[2].button('Evaluate price')
+    if pred_button:
+        with st.spinner():
+            result = data_prep_and_predict(
+                df, 
+                st.session_state.known_df, 
+                st.session_state.rfr_model, 
+                return_drop=False, 
+                skip_dc=True
+                )
+        st.write(f'#### Evaluated price of the car: ₹ {result[0]:,.2f}') 
 
 
 
@@ -161,4 +171,33 @@ if curr_web_page == 'Predict prices for a file with cars':
     
     else:
         st.info('Awaiting for csv file with car characteristics to be uploaded in the sidebar.')
+
+
+
+
+# >>>>>>>>>> 'Explore car prices' <<<<<<<<<<
+def graphic(col_group):
+    pass
+
+
+if curr_web_page == 'Explore car prices':
+    st.markdown("## Explore car prices")
+
+    cols_dict = {
+        'Name': 'name',
+        'Brand': 'brand',
+        'Fuel': 'fuel',
+        'Capacity of the engine (cc)': 'engine_cc', 
+        'Engine power (bhp)': 'max_power_bhp', 
+        'Transmission': 'transmission',
+        'Number of seats': 'seats',
+        'Owner': 'owner',
+        'Year': 'year',
+        'Kilometers driven': 'km_driven',
+        'Seller': 'seller_type' 
+        }
+    cols_list = sorted(list(cols_dict.keys()))
+
+    col_group_by = st.selectbox('Choose car characteristic for grouping prices', cols_list)
+    graphic(col_group_by)
     

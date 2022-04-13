@@ -28,7 +28,7 @@ def brand_col(data):
 
 
 # 3. check if all values seem to be correct
-def values_check(data):
+def values_check(data, drop_df):
     df = data.copy()
     
     allowed_vals = {
@@ -39,7 +39,7 @@ def values_check(data):
         'seats': [np.nan, '2', '4', '5', '6', '7', '8', '9', '10'],
         'brand': [np.nan, 'Hyundai', 'Mahindra', 'Chevrolet', 'Honda', 'Ford', 'Tata', 'Toyota', 'Maruti', 'BMW', 'Volkswagen', 'Audi', 'Nissan', 'Skoda', 'Mercedes-Benz', 'Datsun', 'Renault', 'Fiat', 'MG', 'Jeep', 'Volvo', 'Kia', 'Land Rover', 'Mitsubishi', 'Jaguar', 'Porsche', 'Mini Cooper', 'ISUZU']
     }
-    drop_df = pd.DataFrame(columns = ['drop_reason']+list(df.columns))
+    
     for col, allowed_vals in allowed_vals.items():
         tmp = df[~df[col].isin(allowed_vals)]
         if not tmp.empty:
@@ -150,13 +150,14 @@ def xy_split(data):
 # >>>>>>>>>> Main function (unify all functions above) <<<<<<<<<<
 def data_prep(data, train_df, y_true_flg=False, skip_dc=False):
     df = data.copy()
+    drop_df = pd.DataFrame(columns = ['drop_reason']+list(df.columns))
     
     # Data Cleaning
     if not skip_dc:
         cols = ['name', 'fuel', 'transmission', 'seats', 'engine_cc', 'max_power_bhp']
         df.loc[:, cols] = fillna_by_col(df.loc[:, cols], 'name')
         df = brand_col(df)
-        df, drop_df = values_check(df)
+        df, drop_df = values_check(df, drop_df)
         df = all_fillna_stat(df, train_df)
         df, drop_df = na_check(df, drop_df)
     
