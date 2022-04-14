@@ -1,9 +1,13 @@
+from tkinter import font
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 
 from func import *
 
 import streamlit as st
+
+from plotly import tools
+import plotly.graph_objs as go
 
 # <======================================== Set up ========================================>
 # For loading model only once
@@ -105,7 +109,6 @@ if curr_web_page == 'Predict the price of one car':
         }
     df = pd.DataFrame(all_vals, index=[0])
 
-    # solution for centring the button
     col_but = st.columns(5)
     pred_button = col_but[2].button('Evaluate price')
     if pred_button:
@@ -177,10 +180,10 @@ if curr_web_page == 'Predict prices for a file with cars':
 
 # >>>>>>>>>> 'Explore car prices' <<<<<<<<<<
 if curr_web_page == 'Explore car prices':
+    df = st.session_state.known_df
     st.markdown("## Explore car prices")
 
     cols_dict = {
-        'Name': 'name',
         'Brand': 'brand',
         'Fuel': 'fuel',
         'Capacity of the engine (cc)': 'engine_cc', 
@@ -193,13 +196,77 @@ if curr_web_page == 'Explore car prices':
         'Seller': 'seller_type' 
         }
     cols_list = sorted(list(cols_dict.keys()))
+    
+    select_col = st.sidebar.selectbox('Choose car characteristic for grouping prices', cols_list)
+    col_gb = cols_dict[select_col]
+    vals_col_gb = list(df[col_gb].unique())
 
-    c1, c2 = st.columns(2)
+    plots_flg = st.sidebar.radio('Display prices of groups in', ['one plot', 'separate plots'])
+
+    price_range = st.sidebar.slider(
+        'Select a range of values',
+        25000, 
+        3950000,
+        (25000, 3950000)
+        )
     
-    col_gb = c1.selectbox('Choose car characteristic for grouping prices', cols_list)
-    vals_col_gb = list(st.session_state.known_df[cols_dict[col_gb]].unique())
+    if col_gb in ['engine_cc', 'max_power_bhp', 'km_driven']:
+        n_bins = st.sidebar.slider(f'Number of bins for {select_col}', 2, 10, 5)
+
+        df['bins'] = pd.cut(df[col_gb], n_bins).astype(str).str.strip(']').str.replace('(', 'from ').str.replace(',', ' to')
+        vals_col_gb = list(df['bins'].unique())
+        vals_col_gb.sort(key=lambda x: float(x.split(' to ')[0].strip('from ')))
+        col_gb = 'bins'
+        pass
+    else:
+        vals_col_gb = list(df[col_gb].unique())
+
+    select_vals = st.sidebar.multiselect(
+        'Select groups to include', 
+        vals_col_gb,
+        default = vals_col_gb[0]
+        )
+
+    mask = (df['selling_price_inr'] >= price_range[0]) & (df['selling_price_inr'] <= price_range[1])
+    df = df[mask]
+
+    hists = [
+        go.Histogram(
+            x=df.loc[df[col_gb] == val, 'selling_price_inr'], 
+            name=str(val), 
+            opacity=0.75
+            ) for val in select_vals
+    ]
+
+    if plots_flg == 'one plot':
+        layout = go.Layout(barmode='overlay')
+
+        fig = go.Figure(data=hists, layout=layout)
+        fig.update_xaxes(title_text='Selling Price (₹)', title_font={'size': 20})
+        fig.update_yaxes(title_text='Frequency', title_font={'size': 20})
+
+        
     
-    ######################################
-    if col_gb in ['Brand']:
-        c1.radio('Display prices of groups in', ['one plot', 'separate plots'])
-        c2.multiselect('Select groups to include', vals_col_gb)
+    else:
+        fig = tools.make_subplots(rows=len(hists)//3+1, cols=3)
+
+        i, j = 1, 1
+        for hist in hists:
+            fig.append_trace(hist, i, j)
+            j += 1
+            if j == 4:
+                i += 1
+                j = 1
+        
+    fig.update_layout(
+        showlegend=True,
+        title={
+            'text': f'Histograms of Used Car Sale Price for different {select_col}',
+            'y':.92,
+            'x':.5,
+            'xanchor': 'center',
+            'yanchor': 'top',
+            'font': {'size': 30}
+            }
+        )
+    st.plotly_chart(fig, use_container_width=True)
