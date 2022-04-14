@@ -5,7 +5,7 @@ from func import *
 
 import streamlit as st
 
-# <==================== Set up ====================>
+# <======================================== Set up ========================================>
 # For loading model only once
 if 'rfr_model' not in st.session_state:
     df = read_csv_file('https://raw.githubusercontent.com/ZaikaBohdan/ds_car_price_proj/main/data/clean_train.csv')
@@ -28,11 +28,11 @@ if 'rfr_model' not in st.session_state:
 
 
 
-# <==================== Interface ====================>
+# <======================================== Interface ========================================>
 st.set_page_config(
     page_title='Used car price prediction for the CarDekho website',
     page_icon='🚗',
-    layout='centered'
+    layout='wide'
     )
 
 st.write("# Used car price prediction for the CarDekho website")
@@ -176,10 +176,6 @@ if curr_web_page == 'Predict prices for a file with cars':
 
 
 # >>>>>>>>>> 'Explore car prices' <<<<<<<<<<
-def graphic(col_group):
-    pass
-
-
 if curr_web_page == 'Explore car prices':
     st.markdown("## Explore car prices")
 
@@ -198,6 +194,12 @@ if curr_web_page == 'Explore car prices':
         }
     cols_list = sorted(list(cols_dict.keys()))
 
-    col_group_by = st.selectbox('Choose car characteristic for grouping prices', cols_list)
-    graphic(col_group_by)
+    c1, c2 = st.columns(2)
     
+    col_gb = c1.selectbox('Choose car characteristic for grouping prices', cols_list)
+    vals_col_gb = list(st.session_state.known_df[cols_dict[col_gb]].unique())
+    
+    ######################################
+    if col_gb in ['Brand']:
+        c1.radio('Display prices of groups in', ['one plot', 'separate plots'])
+        c2.multiselect('Select groups to include', vals_col_gb)
