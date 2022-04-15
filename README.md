@@ -71,8 +71,8 @@ The project is separated into 2 notebooks and the web app:
     * Combine the datasets
     * Manage duplicate rows, outliers and null values (with methods that don't cause data leakage for future train/validation split)
     * Split data into train and validation datasets
-<br>
-  
+
+
 [Part 2: Data preparation and model building](https://nbviewer.org/github/ZaikaBohdan/ds_car_price_proj/blob/main/car_price_part_2.ipynb)
   * Data cleaning of train dataset
   * Exploratory data analysis
