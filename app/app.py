@@ -59,9 +59,6 @@ if curr_web_page == 'About the app':
     1. **'Predict the price of one car'**: Manually enter vehicle characteristics to evaluate its price;
     2. **'Predict prices for a file with cars'**: Upload csv file with the characteristics of cars to evaluate their prices. If the column 'selling_price_inr" is present in the given file, then also *MAE, MSE* and *R^2* metrics will be calculated and shown.
     3. **'Explore car prices'**: Explore selling prices in collected data with the help of visualizations.
- 
-    ## Disclaimer
-    This web app is a part of the **personal non-commercial project** ([link to GitHub repository](https://github.com/ZaikaBohdan/ds_car_price_proj)) and **wasn't developed by [CarDekho](https://www.cardekho.com/)**.
     """)
 
 
