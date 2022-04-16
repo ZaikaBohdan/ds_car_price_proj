@@ -25,20 +25,20 @@ The project is separated into 2 notebooks and the web app:
 <summary>Show/Hide</summary>
 <br>
 
-* **[app](https://github.com/ZaikaBohdan/ds_car_price_proj/tree/main/app)**: folder containing files for creating the [web app](https://share.streamlit.io/zaikabohdan/ds_car_price_proj/main/app/app.py)
+* **[app](https://github.com/ZaikaBohdan/ds_car_price_proj/tree/main/app)**: the folder containing files for creating the [web app](https://share.streamlit.io/zaikabohdan/ds_car_price_proj/main/app/app.py)
   * **app.py**: file with code related to app interface
   * **func.py**: file with code related to data processing and predicting car prices
-  * **requirements.txt**: file with list of required Python lybraries for the web app 
-* **[data](https://github.com/ZaikaBohdan/ds_car_price_proj/tree/main/data)**: folder containing all data files
+  * **requirements.txt**: file with a list of required Python libraries for the web app 
+* **[data](https://github.com/ZaikaBohdan/ds_car_price_proj/tree/main/data)**: the folder containing all data files
   * **Car details v3.csv**: [Vehicle dataset](https://www.kaggle.com/nehalbirla/vehicle-dataset-from-cardekho?select=Car+details+v3.csv) from Kaggle
   * **Cardekho_Extract.csv**: [Used Car Prices in India](https://www.kaggle.com/saisaathvik/used-cars-dataset-from-cardekhocom?select=Cardekho_Extract.csv) dataset from Kaggle
-  * **train.csv**, **valid.csv**: splitted pre-cleaned (with methods that don't cause data leakage) data, result of the first notebook  [Part 1: Data collection and splitting into train and validation datasets](https://nbviewer.org/github/ZaikaBohdan/ds_car_price_proj/blob/main/car_price_part_2.ipynb)
+  * **train.csv**, **valid.csv**: the split of pre-cleaned (with methods that don't cause data leakage) data, the result of the first notebook  [Part 1: Data collection and splitting into train and validation datasets](https://nbviewer.org/github/ZaikaBohdan/ds_car_price_proj/blob/main/car_price_part_2.ipynb)
   * **clean_train.csv**: cleaned train dataset used for model building
   * **valid_without_price.csv**: validation dataset without car price column (*selling_price_inr*)
-* **[imgs](https://github.com/ZaikaBohdan/ds_car_price_proj/tree/main/imgs)**: folder with images used in jupyter notebooks and README
-* **[model](https://github.com/ZaikaBohdan/ds_car_price_proj/tree/main/model)**: folder containing trained Random Forest Regression model saved with pickle
-* **[car_price_part_1.ipynb](https://nbviewer.org/github/ZaikaBohdan/ds_car_price_proj/blob/main/car_price_part_1.ipynb)**: notebook with data collection and splitting
-* **[car_price_part_2.ipynb](https://nbviewer.org/github/ZaikaBohdan/ds_car_price_proj/blob/main/car_price_part_2.ipynb)**: notebook with data preparation and model building
+* **[imgs](https://github.com/ZaikaBohdan/ds_car_price_proj/tree/main/imgs)**: the folder with images used in jupyter notebooks and README
+* **[model](https://github.com/ZaikaBohdan/ds_car_price_proj/tree/main/model)**: the folder containing the trained Random Forest Regression model saved with pickle
+* **[car_price_part_1.ipynb](https://nbviewer.org/github/ZaikaBohdan/ds_car_price_proj/blob/main/car_price_part_1.ipynb)**: the notebook with data collection and splitting
+* **[car_price_part_2.ipynb](https://nbviewer.org/github/ZaikaBohdan/ds_car_price_proj/blob/main/car_price_part_2.ipynb)**: the notebook with data preparation and model building
 </details>
   
 ## Tecnologies Used
